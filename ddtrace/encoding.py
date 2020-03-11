@@ -1,6 +1,5 @@
 import json
 import struct
-import copy
 
 import msgpack
 
@@ -79,7 +78,6 @@ class JSONEncoder(_EncoderBase):
 class JSONEncoderV2(JSONEncoder):
     """
     JSONEncoderV2 encodes traces to the new intake API format.
-    The main differences are all ids are 
     """
 
     content_type = "application/json"
