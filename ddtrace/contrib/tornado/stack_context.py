@@ -71,7 +71,11 @@ if _USE_STACK_CONTEXT:
 
         def _has_io_loop(self):
             """Helper to determine if we are currently in an IO loop"""
-            return getattr(IOLoop._current, 'instance', None) is not None
+            instance = getattr(IOLoop._current, 'instance', None)
+            if instance is None:
+                return False
+
+            return getattr(instance, "_running", False)
 
         def _has_active_context(self):
             """Helper to determine if we have an active context or not"""
