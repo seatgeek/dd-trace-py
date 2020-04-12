@@ -69,7 +69,7 @@ if _USE_STACK_CONTEXT:
         def deactivate(self):
             self._active = False
 
-        def _has_io_loop(self):
+        def _in_io_loop(self):
             """Helper to determine if we are currently in an IO loop"""
             instance = getattr(IOLoop._current, 'instance', None)
             if instance is None:
@@ -79,7 +79,7 @@ if _USE_STACK_CONTEXT:
 
         def _has_active_context(self):
             """Helper to determine if we have an active context or not"""
-            if not self._has_io_loop():
+            if not self._in_io_loop():
                 return self._local._has_active_context()
             else:
                 # we're inside a Tornado loop so the TracerStackContext is used
@@ -100,7 +100,7 @@ if _USE_STACK_CONTEXT:
             If used in a separated Thread, the `_state` thread-local storage is used to
             propagate the current Active context from the `MainThread`.
             """
-            if not self._has_io_loop():
+            if not self._in_io_loop():
                 # if a Tornado loop is not available, it means that this method
                 # has been called from a synchronous code, so we can rely in a
                 # thread-local storage
@@ -116,7 +116,7 @@ if _USE_STACK_CONTEXT:
             If used in a separated Thread, the `_state` thread-local storage is used to
             propagate the current Active context from the `MainThread`.
             """
-            if not self._has_io_loop():
+            if not self._in_io_loop():
                 # because we're outside of an asynchronous execution, we store
                 # the current context in a thread-local storage
                 self._local.set(ctx)

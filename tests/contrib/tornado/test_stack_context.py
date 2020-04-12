@@ -64,7 +64,7 @@ class TestIOLoop(object):
 
         # we call IOLoop.current(), but are still in code outside
         # of the event loop
-        assert context._has_io_loop() == False
+        assert context._in_io_loop() == False
 
     @pytest.mark.skipif(tornado.version_info >= (5, 0),
                         reason='tornado.stack_context deprecated in Tornado 5.0 and removed in Tornado 6.0')
@@ -75,6 +75,6 @@ class TestIOLoop(object):
         @tornado.gen.coroutine
         def inner_coroutine():
             # here we're *actually* inside of an event loop
-            assert context._has_io_loop() == True
+            assert context._in_io_loop() == True
 
         ioloop.run_sync(inner_coroutine)
