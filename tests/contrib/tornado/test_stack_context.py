@@ -52,3 +52,29 @@ class TestStackContext(TornadoTestCase):
         assert len(traces[0]) == 1
         assert traces[0][0].trace_id != 100
         assert traces[0][0].parent_id != 101
+
+
+class TestIOLoop(object):
+
+    @pytest.mark.skipif(tornado.version_info >= (5, 0),
+                        reason='tornado.stack_context deprecated in Tornado 5.0 and removed in Tornado 6.0')
+    def test_not_in_ioloop(self):
+        context = TracerStackContext()
+        ioloop = tornado.ioloop.IOLoop.current()
+
+        # we call IOLoop.current(), but are still in code outside
+        # of the event loop
+        assert context._has_io_loop() == False
+
+    @pytest.mark.skipif(tornado.version_info >= (5, 0),
+                        reason='tornado.stack_context deprecated in Tornado 5.0 and removed in Tornado 6.0')
+    def test_in_ioloop(self):
+        context = TracerStackContext()
+        ioloop = tornado.ioloop.IOLoop.current()
+
+        @tornado.gen.coroutine
+        def inner_coroutine():
+            # here we're *actually* inside of an event loop
+            assert context._has_io_loop() == True
+
+        ioloop.run_sync(inner_coroutine)
