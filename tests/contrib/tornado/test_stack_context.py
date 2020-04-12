@@ -12,9 +12,10 @@ class TestStackContext(TornadoTestCase):
     @pytest.mark.skipif(tornado.version_info >= (5, 0),
                         reason='tornado.stack_context deprecated in Tornado 5.0 and removed in Tornado 6.0')
     def test_without_stack_context(self):
-        # without a TracerStackContext, propagation is not available
+        # without a TracerStackContext stack context falls back on thread local storage,
+        # which creates a context if one doesn't exist
         ctx = self.tracer.context_provider.active()
-        assert ctx is None
+        assert ctx is not None
 
     def test_stack_context(self):
         # a TracerStackContext should automatically propagate a tracing context
@@ -41,7 +42,7 @@ class TestStackContext(TornadoTestCase):
     @pytest.mark.skipif(tornado.version_info >= (5, 0),
                         reason='tornado.stack_context deprecated in Tornado 5.0 and removed in Tornado 6.0')
     def test_propagation_without_stack_context(self):
-        # a Context is discarded if not set inside a TracerStackContext
+        # a Context is stored in thread local context if not set inside a TracerStackContext
         ctx = Context(trace_id=100, span_id=101)
         self.tracer.context_provider.activate(ctx)
         with self.tracer.trace('tornado'):
@@ -50,8 +51,8 @@ class TestStackContext(TornadoTestCase):
         traces = self.tracer.writer.pop_traces()
         assert len(traces) == 1
         assert len(traces[0]) == 1
-        assert traces[0][0].trace_id != 100
-        assert traces[0][0].parent_id != 101
+        assert traces[0][0].trace_id == 100
+        assert traces[0][0].parent_id == 101
 
 
 class TestIOLoop(object):
