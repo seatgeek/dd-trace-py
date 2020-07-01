@@ -66,19 +66,16 @@ class PeriodicWorkerThread(object):
         return self._thread.join(timeout)
 
     def _target(self):
-        while not self._stop.wait(self.interval):
-            try:
-                self.run_periodic()
-            except:
-                if self._thread.daemon and sys is None:
-                    return
-                raise
         try:
+            while not self._stop.wait(self.interval):
+                self.run_periodic()
             self._on_shutdown()
-        except:
-            if self._thread.daemon and sys is None:
-                return
-            raise
+        except Exception:
+            # If the problem is due to an interpreter shutdown, ignore it
+            # This is a workaround for Python 2
+            if sys is not None:
+                raise
+
 
     @staticmethod
     def run_periodic():
